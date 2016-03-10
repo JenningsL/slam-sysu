@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc liboctomath.a  CMakeFiles/octomath.dir/Vector3.cpp.o CMakeFiles/octomath.dir/Quaternion.cpp.o CMakeFiles/octomath.dir/Pose6D.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib liboctomath.a
