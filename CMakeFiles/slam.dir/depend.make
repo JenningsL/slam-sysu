@@ -1218,6 +1218,7 @@ CMakeFiles/slam.dir/icp.cpp.o: /usr/local/include/pointmatcher/PointMatcher.h
 CMakeFiles/slam.dir/icp.cpp.o: /usr/local/include/pointmatcher/Registrar.h
 CMakeFiles/slam.dir/icp.cpp.o: include/icp.h
 
+CMakeFiles/slam.dir/main.cpp.o: dbscan/dbscan.h
 CMakeFiles/slam.dir/main.cpp.o: main.cpp
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/boost/any.hpp
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/boost/array.hpp
@@ -2411,6 +2412,7 @@ CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/eigen3/Eigen/src/plugins/Matr
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/nabo/nabo.h
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/AbstractOcTree.h
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/AbstractOccupancyOcTree.h
+CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/ColorOcTree.h
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/MCTables.h
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/OcTree.h
 CMakeFiles/slam.dir/main.cpp.o: /usr/local/include/octomap/OcTreeBaseImpl.h

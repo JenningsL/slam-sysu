@@ -31,6 +31,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/Users/jennings/Desktop/slam/project/octomap/cmake_install.cmake")
   include("/Users/jennings/Desktop/slam/project/octomap/math/cmake_install.cmake")
+  include("/Users/jennings/Desktop/slam/project/dbscan/cmake_install.cmake")
 
 endif()
 

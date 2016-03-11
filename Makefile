@@ -149,6 +149,19 @@ octomath/fast:
 	$(MAKE) -f octomap/math/CMakeFiles/octomath.dir/build.make octomap/math/CMakeFiles/octomath.dir/build
 .PHONY : octomath/fast
 
+#=============================================================================
+# Target rules for targets named dbscan
+
+# Build rule for target.
+dbscan: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 dbscan
+.PHONY : dbscan
+
+# fast build rule for target.
+dbscan/fast:
+	$(MAKE) -f dbscan/CMakeFiles/dbscan.dir/build.make dbscan/CMakeFiles/dbscan.dir/build
+.PHONY : dbscan/fast
+
 icp.o: icp.cpp.o
 
 .PHONY : icp.o
@@ -214,6 +227,7 @@ help:
 	@echo "... slam"
 	@echo "... octomap"
 	@echo "... octomath"
+	@echo "... dbscan"
 	@echo "... icp.o"
 	@echo "... icp.i"
 	@echo "... icp.s"

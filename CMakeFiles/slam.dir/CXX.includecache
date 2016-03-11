@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/Users/jennings/Desktop/slam/project/dbscan/dbscan.h
+
 /Users/jennings/Desktop/slam/project/icp.cpp
 icp.h
 /Users/jennings/Desktop/slam/project/icp.h
@@ -21,12 +23,18 @@ fstream
 -
 time.h
 -
+map
+-
 octomap/octomap.h
 -
 octomap/OcTree.h
 -
+octomap/ColorOcTree.h
+-
 icp.h
 /Users/jennings/Desktop/slam/project/icp.h
+dbscan/dbscan.h
+/Users/jennings/Desktop/slam/project/dbscan/dbscan.h
 
 /usr/local/include/boost/any.hpp
 algorithm
@@ -11688,6 +11696,14 @@ OcTreeKey.h
 cassert
 -
 fstream
+-
+
+/usr/local/include/octomap/ColorOcTree.h
+iostream
+-
+octomap/OcTreeNode.h
+-
+octomap/OccupancyOcTreeBase.h
 -
 
 /usr/local/include/octomap/MCTables.h

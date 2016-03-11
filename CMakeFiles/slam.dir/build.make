@@ -126,6 +126,8 @@ slam: /usr/local/lib/libboost_chrono-mt.dylib
 slam: /usr/local/lib/libnabo.a
 slam: /Users/jennings/Libraries/libpointmatcher/build/contrib/yaml-cpp-pm/libyaml-cpp-pm.a
 slam: octomap/liboctomap.a
+slam: dbscan/libdbscan.a
+slam: octomap/liboctomap.a
 slam: octomap/math/liboctomath.a
 slam: CMakeFiles/slam.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/jennings/Desktop/slam/project/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable slam"

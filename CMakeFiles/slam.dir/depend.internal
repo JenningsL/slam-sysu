@@ -1219,6 +1219,7 @@ CMakeFiles/slam.dir/icp.cpp.o
  /usr/local/include/pointmatcher/Registrar.h
  include/icp.h
 CMakeFiles/slam.dir/main.cpp.o
+ /Users/jennings/Desktop/slam/project/dbscan/dbscan.h
  /Users/jennings/Desktop/slam/project/main.cpp
  /usr/local/include/boost/any.hpp
  /usr/local/include/boost/array.hpp
@@ -2412,6 +2413,7 @@ CMakeFiles/slam.dir/main.cpp.o
  /usr/local/include/nabo/nabo.h
  /usr/local/include/octomap/AbstractOcTree.h
  /usr/local/include/octomap/AbstractOccupancyOcTree.h
+ /usr/local/include/octomap/ColorOcTree.h
  /usr/local/include/octomap/MCTables.h
  /usr/local/include/octomap/OcTree.h
  /usr/local/include/octomap/OcTreeBaseImpl.h
