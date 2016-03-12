@@ -29,7 +29,25 @@ Pointcloud toPointCloud(Matrix<float, 4, Dynamic> features) {
   return pc;
 }
 
-Pointcloud icp(Pointcloud Q, Pointcloud P)
+void accumulateTransfor(TransformMatrix & Tacc, TransformMatrix Tnew) {
+  TransformMatrix R = Tacc.block(0, 0, 3, 3);
+  TransformMatrix T = Tacc.block(0, 3, 3, 1);
+  TransformMatrix Rt = Tnew.block(0, 0, 3, 3);
+  TransformMatrix Tt = Tnew.block(0, 3, 3, 1);
+  // TransformMatrix identityPart = Tacc.block(3, 0, 1, 4);
+  R = Rt * R;
+  T = Rt * T + Tt;
+  Tacc << R, T;
+}
+
+/**
+ * perform icp algorithm
+ * @param  Q    [reference pointcloud]
+ * @param  P    [pointcloud to be aligned]
+ * @param  Tacc [accumulated transform matrix]
+ * @return      [aligned P]
+ */
+Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc)
 {
   Matrix<float, 4, Dynamic> features_Q = getFeaturesMatrix(Q);
   Matrix<float, 4, Dynamic> features_P = getFeaturesMatrix(P);
@@ -43,16 +61,22 @@ Pointcloud icp(Pointcloud Q, Pointcloud P)
   DP ref(features_Q, featureLabels);
 
   PM::ICP icp;
+  PM::Transformation* rigidTrans;
+	rigidTrans = PM::get().REG(Transformation).create("RigidTransformation");
+  data = rigidTrans->compute(data, Tacc); // init transform
   // load YAML config
   string configFile = "icp_config.yaml";
   ifstream ifs(configFile.c_str());
   icp.loadFromYaml(ifs);
   // icp.setDefault();
-  PM::TransformationParameters T = icp(data, ref);
+  TransformMatrix T = icp(data, ref);
+  // cout<< endl << "T: " << endl << T;
 
   // Transform data to express it in ref
   DP data_out(data);
   icp.transformations.apply(data_out, T);
+  accumulateTransfor(Tacc, T);
+  // cout<< endl << "Tacc: " << endl << Tacc;
 
   // Save files to see the results
   // ref.save("test_ref.vtk");

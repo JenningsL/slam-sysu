@@ -2,6 +2,15 @@
 using namespace octomap;
 using namespace std;
 
+/**
+ * find all points within a sphere, store it in @paramnear Points
+ * @param  epsilon    [description]
+ * @param  centerIdx  [description]
+ * @param  visited    [description]
+ * @param  dataset    [description]
+ * @param  nearPoints [description]
+ * @return            [size of the found points]
+ */
 int regionQuery(float epsilon, int centerIdx, bool *visited, const Pointcloud dataset, std::list<int> & nearPoints) {
   point3d cPoint = dataset[centerIdx];
   int size = dataset.size();
@@ -35,6 +44,13 @@ void expandCluster(int *&cluster_nos, const Pointcloud dataset, bool *visited, i
   }
 }
 
+/**
+ * perform dbscan algorithm
+ * @param  dataset    [3d point cloud]
+ * @param  min_points [min points number within the sphere with radius epsilon]
+ * @param  epsilon    [radius]
+ * @return            [cluster indexs indicating which cluster the corresponding point belong to]
+ */
 int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon) {
 	int next_cluster = 1;
   int DATASET_SIZE = dataset.size();

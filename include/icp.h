@@ -14,8 +14,10 @@ typedef PointMatcher<float> PM;
 typedef PM::DataPoints DP;
 typedef PointMatcher<float>::DataPoints::Label Label;
 typedef PointMatcher<float>::DataPoints::Labels Labels;
+typedef PM::TransformationParameters TransformMatrix;
 
 
 Matrix<float, 4, Dynamic> getFeaturesMatrix(Pointcloud P);
 
-Pointcloud icp(Pointcloud Q, Pointcloud P);
+Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc);
+// Pointcloud icp(Pointcloud Q, Pointcloud P);

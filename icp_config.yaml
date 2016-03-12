@@ -18,7 +18,7 @@ outlierFilters:
       ratio: 1
 
 errorMinimizer:
-  PointToPlaneErrorMinimizer
+  PointToPointErrorMinimizer
 
 transformationCheckers:
   - CounterTransformationChecker:
