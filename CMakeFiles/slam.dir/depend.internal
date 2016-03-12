@@ -1221,6 +1221,7 @@ CMakeFiles/slam.dir/icp.cpp.o
 CMakeFiles/slam.dir/main.cpp.o
  /Users/jennings/Desktop/slam/project/dbscan/dbscan.h
  /Users/jennings/Desktop/slam/project/main.cpp
+ /Users/jennings/Desktop/slam/project/ransac/ransac.h
  /usr/local/include/boost/any.hpp
  /usr/local/include/boost/array.hpp
  /usr/local/include/boost/assert.hpp
@@ -2208,6 +2209,7 @@ CMakeFiles/slam.dir/main.cpp.o
  /usr/local/include/eigen3/Eigen/Array
  /usr/local/include/eigen3/Eigen/Cholesky
  /usr/local/include/eigen3/Eigen/Core
+ /usr/local/include/eigen3/Eigen/Dense
  /usr/local/include/eigen3/Eigen/Eigen2Support
  /usr/local/include/eigen3/Eigen/Eigenvalues
  /usr/local/include/eigen3/Eigen/Geometry

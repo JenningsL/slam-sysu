@@ -35,6 +35,14 @@ icp.h
 /Users/jennings/Desktop/slam/project/icp.h
 dbscan/dbscan.h
 /Users/jennings/Desktop/slam/project/dbscan/dbscan.h
+ransac/ransac.h
+/Users/jennings/Desktop/slam/project/ransac/ransac.h
+
+/Users/jennings/Desktop/slam/project/ransac/ransac.h
+octomap/octomap.h
+-
+Eigen/Dense
+-
 
 /usr/local/include/boost/any.hpp
 algorithm
@@ -10927,6 +10935,22 @@ src/Core/util/ReenableStupidWarnings.h
 /usr/local/include/eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h
 Eigen2Support
 /usr/local/include/eigen3/Eigen/Eigen2Support
+
+/usr/local/include/eigen3/Eigen/Dense
+Core
+/usr/local/include/eigen3/Eigen/Core
+LU
+/usr/local/include/eigen3/Eigen/LU
+Cholesky
+/usr/local/include/eigen3/Eigen/Cholesky
+QR
+/usr/local/include/eigen3/Eigen/QR
+SVD
+/usr/local/include/eigen3/Eigen/SVD
+Geometry
+/usr/local/include/eigen3/Eigen/Geometry
+Eigenvalues
+/usr/local/include/eigen3/Eigen/Eigenvalues
 
 /usr/local/include/eigen3/Eigen/Eigen2Support
 src/Core/util/DisableStupidWarnings.h

@@ -162,6 +162,19 @@ dbscan/fast:
 	$(MAKE) -f dbscan/CMakeFiles/dbscan.dir/build.make dbscan/CMakeFiles/dbscan.dir/build
 .PHONY : dbscan/fast
 
+#=============================================================================
+# Target rules for targets named ransac
+
+# Build rule for target.
+ransac: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ransac
+.PHONY : ransac
+
+# fast build rule for target.
+ransac/fast:
+	$(MAKE) -f ransac/CMakeFiles/ransac.dir/build.make ransac/CMakeFiles/ransac.dir/build
+.PHONY : ransac/fast
+
 icp.o: icp.cpp.o
 
 .PHONY : icp.o
@@ -228,6 +241,7 @@ help:
 	@echo "... octomap"
 	@echo "... octomath"
 	@echo "... dbscan"
+	@echo "... ransac"
 	@echo "... icp.o"
 	@echo "... icp.i"
 	@echo "... icp.s"

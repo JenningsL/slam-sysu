@@ -9,12 +9,13 @@
 #include <octomap/ColorOcTree.h>
 #include "icp.h"
 #include "dbscan/dbscan.h"
+#include "ransac/ransac.h"
 
 using namespace std;
 using namespace octomap;
 using namespace Eigen;
 
-#define MAX_RANGE 50
+#define MAX_RANGE 30
 
 typedef PointMatcher<float>::TransformationParameters TransformMatrix;
 
@@ -77,23 +78,17 @@ Pointcloud readPointCloud(const char* filename) {
   return Q;
 }
 
-void initMap(ColorOcTree &tree, Pointcloud P) {
-  tree.insertPointCloud(P, point3d(0,0,0), MAX_RANGE, true); // maxrange
-
-  for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
-    tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
+void extractGround(Pointcloud P, Pointcloud & ground, Pointcloud &nonGround) {
+  bool *isGround;
+  isGround = ransacFitPlane(P, 0.5, 6000, 1000);
+  int size = P.size();
+  for (int i = 0; i < size; i++) {
+    if (isGround[i]) {
+      ground.push_back(P[i]);
+    } else {
+      nonGround.push_back(P[i]);
+    }
   }
-
-  tree.updateInnerOccupancy();
-}
-
-// TODO:
-Pointcloud extractGround(Pointcloud P) {
-  point3d l,u;
-  P.calcBBX(l, u);
-  l = point3d(l.x(), l.y(), -1);
-  P.crop(l, u);
-  return P;
 }
 
 /**
@@ -142,6 +137,7 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
     if (cluster.size() < 100) {
       stationary.push_back(cluster);
     } else {
+      cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
       // clear points
       Pointcloud tmp(P);
       point3d lowerBound, upperBound;
@@ -150,8 +146,10 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
       upperBound += point3d(0.5, 0.5, 0.5);
       tmp.crop(lowerBound, upperBound);
       for (Pointcloud::iterator it = tmp.begin(); it != tmp.end(); it++) {
-        tree.updateNode((*it), false);
-        // tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 255, 0, 0);
+        // tree.updateNode((*it), false);
+
+        ColorOcTreeNode* n = tree.updateNode((*it), true);
+        n->setColor(255,0,0); // set color to red
       }
     }
   }
@@ -159,11 +157,30 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
   return stationary;
 }
 
+void initMap(ColorOcTree &tree, Pointcloud P) {
+  Pointcloud ground, PWithOutGround;
+  extractGround(P, ground, PWithOutGround);
+  P = PWithOutGround;
+
+  tree.insertPointCloud(P, point3d(0,0,0), MAX_RANGE, true); // maxrange
+
+  for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
+    tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
+  }
+
+  tree.updateInnerOccupancy();
+}
+
 Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
   long beginTime = clock();
-  P = extractGround(P);
-  P = icp(lastP, P, TransAcc);
-  P = dynamicFilter(tree, P);
+  Pointcloud ground, PWithOutGround;
+  extractGround(P, ground, PWithOutGround);
+  // icp and dynamic dectction should be implemented without ground points
+  PWithOutGround = icp(lastP, PWithOutGround, TransAcc);
+  PWithOutGround = dynamicFilter(tree, PWithOutGround);
+  // restore ground points
+  PWithOutGround.push_back(ground);
+  P = PWithOutGround;
   tree.insertPointCloud(P, point3d(0, 0, 0), MAX_RANGE);
   for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
     tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
@@ -186,11 +203,17 @@ int main(int argc, char** argv) {
     step = atoi(argv[3]);
   }
 
+  // int from = atoi(argv[1]);
+  // float t = atof(argv[2]);
+  // int min = atoi(argv[3]);
+  // int max_iter = atoi(argv[4]);
+
   // init
   char baseFile[50];
   sprintf(baseFile, "./data/dynamic_segment (Frame %04d).csv", from);
+  // sprintf(baseFile, "./data/pedestrian/pedestrian (Frame %04d).csv", from);
   Pointcloud base = readPointCloud(baseFile);
-  base = extractGround(base);
+  // base = extractGround(base);
   initMap(tree, base);
   TransAcc.resize(4, 4);
   TransAcc.setIdentity();
@@ -209,6 +232,12 @@ int main(int argc, char** argv) {
 
   string result = "map.bt";
   tree.writeBinary(result);
+
+  // color tree
+  // tree.updateInnerOccupancy();
+  // string result = "map.ot";
+  // tree.write(result);
+
   cout << "wrote example file " << result << endl;
 
   return 0;

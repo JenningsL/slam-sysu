@@ -16,9 +16,11 @@ aux_source_directory(. DIR_SRCS)
 add_subdirectory(octomap)
 add_subdirectory(octomap/math)
 add_subdirectory(dbscan)
+add_subdirectory(ransac)
 
 add_executable(${PROJECT_NAME} ${DIR_SRCS})
 
 target_link_libraries(${PROJECT_NAME} ${libpointmatcher_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} octomap)
 target_link_libraries(${PROJECT_NAME} dbscan)
+target_link_libraries(${PROJECT_NAME} ransac)

@@ -21,6 +21,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 set(CMAKE_TARGET_LINKED_INFO_FILES
   "/Users/jennings/Desktop/slam/project/octomap/CMakeFiles/octomap.dir/DependInfo.cmake"
   "/Users/jennings/Desktop/slam/project/dbscan/CMakeFiles/dbscan.dir/DependInfo.cmake"
+  "/Users/jennings/Desktop/slam/project/ransac/CMakeFiles/ransac.dir/DependInfo.cmake"
   "/Users/jennings/Desktop/slam/project/octomap/math/CMakeFiles/octomath.dir/DependInfo.cmake"
   )
 

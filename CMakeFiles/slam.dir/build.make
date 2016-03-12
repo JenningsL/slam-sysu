@@ -127,6 +127,7 @@ slam: /usr/local/lib/libnabo.a
 slam: /Users/jennings/Libraries/libpointmatcher/build/contrib/yaml-cpp-pm/libyaml-cpp-pm.a
 slam: octomap/liboctomap.a
 slam: dbscan/libdbscan.a
+slam: ransac/libransac.a
 slam: octomap/liboctomap.a
 slam: octomap/math/liboctomath.a
 slam: CMakeFiles/slam.dir/link.txt

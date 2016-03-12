@@ -32,6 +32,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/Users/jennings/Desktop/slam/project/octomap/cmake_install.cmake")
   include("/Users/jennings/Desktop/slam/project/octomap/math/cmake_install.cmake")
   include("/Users/jennings/Desktop/slam/project/dbscan/cmake_install.cmake")
+  include("/Users/jennings/Desktop/slam/project/ransac/cmake_install.cmake")
 
 endif()
 
