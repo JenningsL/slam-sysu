@@ -21,7 +21,8 @@ bool *ransacFitPlane(Pointcloud p, float THROTTLE, int MIN_INLIERS, int MAX_ITER
     idx.push_back(i);
   }
 
-  for (int iter = 0; iter < MAX_ITER; iter++) {
+  int iter;
+  for (iter = 0; iter < MAX_ITER; iter++) {
     random_shuffle(idx.begin(), idx.end());
     // randomly select 3 points
     PlaneParam hyp_plane = getPlane(p[idx[0]], p[idx[1]], p[idx[2]]);
@@ -46,8 +47,12 @@ bool *ransacFitPlane(Pointcloud p, float THROTTLE, int MIN_INLIERS, int MAX_ITER
         bestFitInliers = inliers;
         bestInliersIdx = inliersIdx;
       }
+      if (bestErr < 0.5) break;
     }
   }
+
+  cout<< "bestErr:" << bestErr <<endl;
+  cout<< "iteration:" << iter <<endl;
 
   // for matlab test
   // ofstream out;

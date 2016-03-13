@@ -15,7 +15,7 @@ using namespace std;
 using namespace octomap;
 using namespace Eigen;
 
-#define MAX_RANGE 30
+#define MAX_RANGE 60
 
 typedef PointMatcher<float>::TransformationParameters TransformMatrix;
 
@@ -80,7 +80,7 @@ Pointcloud readPointCloud(const char* filename) {
 
 void extractGround(Pointcloud P, Pointcloud & ground, Pointcloud &nonGround) {
   bool *isGround;
-  isGround = ransacFitPlane(P, 0.5, 6000, 1000);
+  isGround = ransacFitPlane(P, 0.5, 6000, 500);
   int size = P.size();
   for (int i = 0; i < size; i++) {
     if (isGround[i]) {
@@ -98,6 +98,7 @@ void extractGround(Pointcloud P, Pointcloud & ground, Pointcloud &nonGround) {
  * @return      [pointcloud without dynamic points]
  */
 Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
+  long beginTime = clock();
   typedef std::map<int, Pointcloud> MAP;
   typedef std::pair<int, Pointcloud> PAIR;
   Pointcloud dcs; // dynamic candidates
@@ -146,21 +147,26 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
       upperBound += point3d(0.5, 0.5, 0.5);
       tmp.crop(lowerBound, upperBound);
       for (Pointcloud::iterator it = tmp.begin(); it != tmp.end(); it++) {
-        // tree.updateNode((*it), false);
+        tree.updateNode((*it), false);
 
-        ColorOcTreeNode* n = tree.updateNode((*it), true);
-        n->setColor(255,0,0); // set color to red
+        // ColorOcTreeNode* n = tree.updateNode((*it), true);
+        // n->setColor(255,0,0); // set color to red
       }
     }
   }
+
+  long endTime = clock();
+  char msg[100];
+  sprintf(msg, "cluster consume time: %.2f s.\n", (float)(endTime-beginTime)/1000000);
+  cout << msg;
 
   return stationary;
 }
 
 void initMap(ColorOcTree &tree, Pointcloud P) {
-  Pointcloud ground, PWithOutGround;
-  extractGround(P, ground, PWithOutGround);
-  P = PWithOutGround;
+  // Pointcloud ground, PWithOutGround;
+  // extractGround(P, ground, PWithOutGround);
+  // P = PWithOutGround;
 
   tree.insertPointCloud(P, point3d(0,0,0), MAX_RANGE, true); // maxrange
 
@@ -172,23 +178,30 @@ void initMap(ColorOcTree &tree, Pointcloud P) {
 }
 
 Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
+
+  // Pointcloud ground, PWithOutGround, P_;
+  // extractGround(P, ground, PWithOutGround);
+  //
+  // // icp and dynamic dectction should be implemented without ground points
+  // P_ = icp(lastP, PWithOutGround, TransAcc);
+  // P_ = dynamicFilter(tree, P_);
+  // // restore ground points
+  // P = P_;
+  // P.push_back(ground);
+
+  P = icp(lastP, P, TransAcc);
+  // P = dynamicFilter(tree, P);
+
   long beginTime = clock();
-  Pointcloud ground, PWithOutGround;
-  extractGround(P, ground, PWithOutGround);
-  // icp and dynamic dectction should be implemented without ground points
-  PWithOutGround = icp(lastP, PWithOutGround, TransAcc);
-  PWithOutGround = dynamicFilter(tree, PWithOutGround);
-  // restore ground points
-  PWithOutGround.push_back(ground);
-  P = PWithOutGround;
   tree.insertPointCloud(P, point3d(0, 0, 0), MAX_RANGE);
-  for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
-    tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
-  } // color
+  // for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
+  //   tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
+  // } // color
   long endTime = clock();
   char msg[100];
-  sprintf(msg, "frame %d/%d completed, consume time: %.2f s.\n", progress, total, (float)(endTime-beginTime)/1000000);
+  sprintf(msg, "frame %d/%d completed, update map consume time: %.2f s.\n", progress, total, (float)(endTime-beginTime)/1000000);
   cout << msg;
+  // return P_;
   return P;
 }
 
@@ -213,7 +226,6 @@ int main(int argc, char** argv) {
   sprintf(baseFile, "./data/dynamic_segment (Frame %04d).csv", from);
   // sprintf(baseFile, "./data/pedestrian/pedestrian (Frame %04d).csv", from);
   Pointcloud base = readPointCloud(baseFile);
-  // base = extractGround(base);
   initMap(tree, base);
   TransAcc.resize(4, 4);
   TransAcc.setIdentity();
@@ -241,4 +253,18 @@ int main(int argc, char** argv) {
   cout << "wrote example file " << result << endl;
 
   return 0;
+
+  // Pointcloud P;
+  // char file[50];
+  // for (int i = from + 1; i <= to; i += step) {
+  //   sprintf(file, "./data/dynamic_segment (Frame %04d).csv", i);
+  //   P = readPointCloud(file);
+  //   long beginTime = clock();
+  //   ransacFitPlane(P, 0.5, 6000, 500);
+  //   long endTime = clock();
+  //   char msg[100];
+  //   sprintf(msg, "ransac consume time: %.2f s.\n", (float)(endTime-beginTime)/1000000);
+  //   cout << msg;
+  // }
+
 }

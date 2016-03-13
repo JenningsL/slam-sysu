@@ -2,6 +2,7 @@
 using namespace octomap;
 using namespace std;
 
+// TODO: use kd-tree
 /**
  * find all points within a sphere, store it in @paramnear Points
  * @param  epsilon    [description]

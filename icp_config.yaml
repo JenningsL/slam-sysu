@@ -1,6 +1,6 @@
 readingDataPointsFilters:
   - RandomSamplingDataPointsFilter:
-      prob: 1
+      prob: 0.8
 
 referenceDataPointsFilters:
   - SamplingSurfaceNormalDataPointsFilter:
