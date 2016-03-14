@@ -1,6 +1,6 @@
 readingDataPointsFilters:
   - RandomSamplingDataPointsFilter:
-      prob: 0.8
+      prob: 1
 
 referenceDataPointsFilters:
   - SamplingSurfaceNormalDataPointsFilter:
@@ -15,7 +15,7 @@ matcher:
 
 outlierFilters:
   - TrimmedDistOutlierFilter:
-      ratio: 1
+      ratio: 0.95
 
 errorMinimizer:
   PointToPointErrorMinimizer

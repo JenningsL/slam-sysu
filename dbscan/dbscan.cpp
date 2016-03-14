@@ -1,8 +1,11 @@
 #include <octomap/octomap.h>
+#include "nabo/nabo.h"
 using namespace octomap;
 using namespace std;
+using namespace Nabo;
+using namespace Eigen;
 
-// TODO: use kd-tree
+NNSearchF* nns;
 /**
  * find all points within a sphere, store it in @paramnear Points
  * @param  epsilon    [description]
@@ -15,13 +18,22 @@ using namespace std;
 int regionQuery(float epsilon, int centerIdx, bool *visited, const Pointcloud dataset, std::list<int> & nearPoints) {
   point3d cPoint = dataset[centerIdx];
   int size = dataset.size();
-  for (int i = 0; i < size; i++) {
-    if (visited[i]) continue;
-    // cout << "dist: " << cPoint.distance(dataset[i]) << "epsilon: " << epsilon << endl;
-    if (cPoint.distance(dataset[i]) < epsilon) {
-      nearPoints.push_back(i);
+  // 1 query points
+  VectorXf q;
+  q.resize(3);
+  q(0) = cPoint.x();
+  q(1) = cPoint.y();
+  q(2) = cPoint.z();
+  const int K = 1000;
+  VectorXi indices(K);
+  VectorXf dists2(K);
+  nns->knn(q, indices, dists2, K, 0, 0, epsilon);
+  for (int i = 0; i < indices.size(); i++) {
+    if (indices(i)) {
+      nearPoints.push_back(indices(i));
     }
   }
+
   return nearPoints.size();
 }
 
@@ -58,10 +70,17 @@ int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon)
   bool *visited = new bool[DATASET_SIZE];
   int *cluster_nos = new int[DATASET_SIZE];
 
+  // init kd-tree nearsearch
+  MatrixXf M;
+  M.resize(3, DATASET_SIZE);
   for (int i = 0; i < DATASET_SIZE; i++) {
     visited[i] = 0;
     cluster_nos[i] = 0;
+    M(0, i) = dataset[i].x();
+    M(1, i) = dataset[i].y();
+    M(2, i) = dataset[i].z();
   }
+  nns = NNSearchF::createKDTreeLinearHeap(M);
 
 	for(int i = 0; i < DATASET_SIZE; i++)
 	{

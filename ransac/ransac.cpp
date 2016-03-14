@@ -51,8 +51,8 @@ bool *ransacFitPlane(Pointcloud p, float THROTTLE, int MIN_INLIERS, int MAX_ITER
     }
   }
 
-  cout<< "bestErr:" << bestErr <<endl;
-  cout<< "iteration:" << iter <<endl;
+  // cout<< "bestErr:" << bestErr <<endl;
+  // cout<< "iteration:" << iter <<endl;
 
   // for matlab test
   // ofstream out;
