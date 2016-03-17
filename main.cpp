@@ -15,7 +15,7 @@ using namespace std;
 using namespace octomap;
 using namespace Eigen;
 
-#define MAX_RANGE 60
+#define MAX_RANGE -1
 
 typedef PointMatcher<float>::TransformationParameters TransformMatrix;
 
@@ -124,12 +124,13 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
     }
   }
   int size = dcs.size();
+  cout << "dynamic candidates size: " << size << "/" << P.size() << endl;
   int* clusters_idxs = new int[size];
   clusters_idxs = dbscan(dcs, 10, 1); // -min_points -epsilon
   MAP clusterMap;
   for (int i = 0; i < size; i++) {
     int cluster_idx = clusters_idxs[i];
-    if (cluster_idx == 0) continue; // noise
+    // if (cluster_idx == 0) continue; // noise
     MAP::iterator it = clusterMap.find(cluster_idx);
     float x = dcs[i].x();
     float y = dcs[i].y();
@@ -143,17 +144,15 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
     }
   }
 
-  // ofstream out;
-  // out.open("cluster.csv");
-
   for (MAP::iterator it = clusterMap.begin(); it != clusterMap.end(); it++) {
     Pointcloud cluster = it->second;
+    int cluster_idx = it->first;
     point3d c; // centroid of the cluster
     getPointcloudFeatures(cluster, c);
-    if (cluster.size() < 100 || c.z() > 1.5) {
+    if (cluster_idx == 0 || cluster.size() < 100 || cluster.size() > 500 || c.z() > 1.5) {
       stationary.push_back(cluster);
     } else {
-      // cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
+      cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
       // clear points
       Pointcloud tmp(P);
       point3d lowerBound, upperBound;
@@ -164,28 +163,25 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
       for (Pointcloud::iterator it = tmp.begin(); it != tmp.end(); it++) {
         tree.updateNode((*it), false);
 
-        // out << (*it).x() << " " << (*it).y() << " " << (*it).z() << " " << endl;
-
         // ColorOcTreeNode* n = tree.updateNode((*it), true);
         // n->setColor(255,0,0); // set color to red
       }
     }
   }
 
-  // out.close();
-
   long endTime = clock();
   char msg[100];
   sprintf(msg, "filter dynamic consume time: %.2f s.\n", (float)(endTime-beginTime)/1000000);
   cout << msg;
 
+  cout << "dynamic points size: " << P.size() - stationary.size() << "/" << P.size() << endl;
   return stationary;
 }
 
 void initMap(ColorOcTree &tree, Pointcloud P) {
-  Pointcloud ground, PWithOutGround;
-  extractGround(P, ground, PWithOutGround);
-  P = PWithOutGround;
+  // Pointcloud ground, PWithOutGround;
+  // extractGround(P, ground, PWithOutGround);
+  // P = PWithOutGround;
 
   tree.insertPointCloud(P, point3d(0,0,0), MAX_RANGE, true); // maxrange
 
@@ -197,16 +193,14 @@ void initMap(ColorOcTree &tree, Pointcloud P) {
 }
 
 Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
-
   Pointcloud ground, PWithOutGround, P_;
-  extractGround(P, ground, PWithOutGround);
-
   // icp and dynamic dectction should be implemented without ground points
-  P_ = icp(lastP, PWithOutGround, TransAcc);
-  P_ = dynamicFilter(tree, P_);
-  // restore ground points
+  P = icp(lastP, P, TransAcc);
+  // dynamic detection
+  extractGround(P, ground, PWithOutGround);
+  P_ = dynamicFilter(tree, PWithOutGround);
+  P_.push_back(ground);
   P = P_;
-  P.push_back(ground);
 
   // P = icp(lastP, P, TransAcc);
   // P = dynamicFilter(tree, P);
@@ -220,24 +214,20 @@ Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
   char msg[100];
   sprintf(msg, "frame %d/%d completed, update map consume time: %.2f s.\n", progress, total, (float)(endTime-beginTime)/1000000);
   cout << msg;
-  return P_;
-  // return P;
+  
+  return P;
 }
 
 int main(int argc, char** argv) {
   ColorOcTree tree (0.1);  // create empty tree with resolution 0.1
   int from  = atoi(argv[1]);
   int to = atoi(argv[2]);
-  int step;
-  if (argc == 3) {
-    step = 1;
-  } else {
-    step = atoi(argv[3]);
-  }
+  int step = atoi(argv[3]);
+  string path = argv[4];
 
   // init
   char baseFile[50];
-  sprintf(baseFile, "./data/dynamic_segment (Frame %04d).csv", from);
+  sprintf(baseFile, "%s (Frame %04d).csv", path.c_str(), from);
   Pointcloud base = readPointCloud(baseFile);
   initMap(tree, base);
   TransAcc.resize(4, 4);
@@ -249,7 +239,7 @@ int main(int argc, char** argv) {
   lastP = base;
   char file[50];
   for (int i = from + 1; i <= to; i += step) {
-    sprintf(file, "./data/dynamic_segment (Frame %04d).csv", i);
+    sprintf(file, "%s (Frame %04d).csv", path.c_str(), i);
     P = readPointCloud(file);
     lastP = updateMap(tree, P, lastP);
     progress++;
