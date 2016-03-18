@@ -24,7 +24,8 @@ int regionQuery(float epsilon, int centerIdx, bool *visited, const Pointcloud da
   q(0) = cPoint.x();
   q(1) = cPoint.y();
   q(2) = cPoint.z();
-  const int K = 1000;
+  // const int K = 1000;
+  const int K = size - 1;
   VectorXi indices(K);
   VectorXf dists2(K);
   nns->knn(q, indices, dists2, K, 0, 0, epsilon);

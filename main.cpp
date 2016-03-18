@@ -149,9 +149,11 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P) {
     int cluster_idx = it->first;
     point3d c; // centroid of the cluster
     getPointcloudFeatures(cluster, c);
-    if (cluster_idx == 0 || cluster.size() < 100 || cluster.size() > 500 || c.z() > 1.5) {
+    if (cluster_idx == 0 || cluster.size() < 100 || cluster.size() > 1000 || c.z() > 1.5 || c.z() < -1) {
+    // if (cluster_idx == 0 || cluster.size() < 100) {
       stationary.push_back(cluster);
     } else {
+
       cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
       // clear points
       Pointcloud tmp(P);
@@ -202,19 +204,17 @@ Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
   P_.push_back(ground);
   P = P_;
 
-  // P = icp(lastP, P, TransAcc);
-  // P = dynamicFilter(tree, P);
-
   long beginTime = clock();
   tree.insertPointCloud(P, point3d(0, 0, 0), MAX_RANGE);
   // for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
+  //   // tree.updateNode((*it), true);
   //   tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
   // } // color
   long endTime = clock();
   char msg[100];
   sprintf(msg, "frame %d/%d completed, update map consume time: %.2f s.\n", progress, total, (float)(endTime-beginTime)/1000000);
   cout << msg;
-  
+
   return P;
 }
 
@@ -245,13 +245,18 @@ int main(int argc, char** argv) {
     progress++;
   }
 
-  string result = "map.bt";
-  tree.writeBinary(result);
+  // string result = "map.bt";
+  // tree.writeBinary(result);
 
   // color tree
+  // for (Pointcloud::iterator it = dynamic_points.begin(); it != dynamic_points.end(); it++) {
+  //   // tree.updateNode((*it), false);
+  //   ColorOcTreeNode* n = tree.updateNode((*it), true);
+  //   n->setColor(255,0,0); // set color to red
+  // }
   // tree.updateInnerOccupancy();
-  // string result = "map.ot";
-  // tree.write(result);
+  string result = "map.bt";
+  tree.write(result);
 
   cout << "wrote example file " << result << endl;
 
