@@ -8,6 +8,7 @@
 using namespace std;
 using namespace Eigen;
 using namespace octomap;
+using namespace Nabo;
 // using namespace PointMatcherSupport;
 
 typedef PointMatcher<float> PM;
@@ -19,5 +20,5 @@ typedef PM::TransformationParameters TransformMatrix;
 
 Matrix<float, 4, Dynamic> getFeaturesMatrix(Pointcloud P);
 
-Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc);
-// Pointcloud icp(Pointcloud Q, Pointcloud P);
+// Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc);
+Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc, bool * cs);

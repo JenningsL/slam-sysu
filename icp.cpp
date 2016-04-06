@@ -1,4 +1,6 @@
 #include "icp.h"
+// #include <algorithm>
+
 
 Matrix<float, 4, Dynamic> getFeaturesMatrix(Pointcloud P) {
   int nPoints = P.size();
@@ -40,6 +42,133 @@ void accumulateTransfor(TransformMatrix & Tacc, TransformMatrix Tnew) {
   Tacc << R, T;
 }
 
+/*code for ransacIcp*/
+Matrix<float, 4, Dynamic> randomPick(Pointcloud P, int n) {
+  random_shuffle(P.begin(), P.end());
+  Pointcloud samples;
+  for (int i = 1; i < n; i++) {
+    samples.push_back(P[i]);
+  }
+  return getFeaturesMatrix(samples);
+}
+
+Pointcloud findInliners(DP Q, DP P_, TransformMatrix T, float throttle, bool *cs) {
+  Pointcloud inliners;
+
+  // apply transformation
+  DP P = P_;
+  PM::Transformation* rigidTrans;
+  rigidTrans = PM::get().REG(Transformation).create("RigidTransformation");
+  P = rigidTrans->compute(P, T);
+
+  // match
+  MatrixXf M = Q.features;
+  MatrixXf q = P.features;
+  MatrixXf P_origin = P_.features;
+
+  NNSearchF* nns = NNSearchF::createKDTreeLinearHeap(M);
+  const int K = 1;
+  MatrixXi indices;
+  MatrixXf dists2;
+  indices.resize(K, q.cols());
+  dists2.resize(K, q.cols());
+  nns->knn(q, indices, dists2, K, throttle);
+
+  for (int i = 0; i < q.cols(); i++) {
+    Vector4f point = P_origin.col(i);
+    if (dists2(i) < throttle && indices(i)) {
+      inliners.push_back(point(0), point(1), point(2));
+      cs[i] = 1;
+    } else {
+      cs[i] = 0;
+    }
+  }
+
+  return inliners;
+}
+
+float calcErr(DP Q, DP P, TransformMatrix T) {
+  // apply transformation
+  PM::Transformation* rigidTrans;
+  rigidTrans = PM::get().REG(Transformation).create("RigidTransformation");
+  P = rigidTrans->compute(P, T);
+
+  // match
+  MatrixXf M = Q.features;
+  MatrixXf q = P.features;
+  NNSearchF* nns = NNSearchF::createKDTreeLinearHeap(M);
+  const int K = 1;
+  MatrixXi indices;
+  MatrixXf dists2;
+  indices.resize(K, q.cols());
+  dists2.resize(K, q.cols());
+  nns->knn(q, indices, dists2, K, 0.1);
+  return dists2.mean();
+}
+
+DP matrix2DP(Matrix<float, 4, Dynamic> features) {
+  Labels featureLabels;
+  featureLabels.push_back(Label("x"));
+  featureLabels.push_back(Label("y"));
+  featureLabels.push_back(Label("z"));
+  return DP(features, featureLabels);
+}
+
+TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
+  const int MAX_ITER = 20;
+  const float pIn = 0.7;
+  float throttle = 0.1;
+  float errMin = -1;
+  float errAcc = 0.1;
+
+  // setup icp
+  PM::ICP icp;
+  // string configFile = "icp_config.yaml";
+  // ifstream ifs(configFile.c_str());
+  // icp.loadFromYaml(ifs);
+  icp.setDefault();
+
+  int dataSize = data.features.cols();
+  Pointcloud P = toPointCloud(data.features);
+  Matrix<float, 4, Dynamic> sample;
+  TransformMatrix bestT;
+  int i;
+  bool founded = false;
+  for (i = 0; i < MAX_ITER; i++) {
+    sample = randomPick(P, ceil(dataSize*0.5));
+
+    DP dataTmp = matrix2DP(sample);
+    TransformMatrix T = icp(dataTmp, ref);
+
+    Pointcloud inliners = findInliners(ref, data, T, throttle, cs);
+    cout << "inliners:" << (float)inliners.size()/dataSize << endl;
+
+    if ((float)inliners.size()/dataSize > pIn) {
+      founded = true;
+      DP inlinersDp = matrix2DP(getFeaturesMatrix(inliners));
+
+      T = icp(inlinersDp, ref);
+
+      float err = calcErr(ref, inlinersDp, T);
+      if (errMin < 0 || err < errMin) {
+        errMin = err;
+        bestT = T;
+        if (errMin < errAcc) break;
+      }
+    }
+  }
+
+  if (!founded) {
+    cout << "falled back" << endl;
+    bestT = icp(data, ref);
+  }
+
+  cout << "ransac icp completed in " << i << "iterations" << endl;
+  cout << "final err: " << errMin << endl;
+  return bestT;
+}
+/*******************/
+
 /**
  * perform icp algorithm
  * @param  Q    [reference pointcloud]
@@ -47,8 +176,7 @@ void accumulateTransfor(TransformMatrix & Tacc, TransformMatrix Tnew) {
  * @param  Tacc [accumulated transform matrix]
  * @return      [aligned P]
  */
-Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc)
-{
+Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc, bool * cs) {
   Matrix<float, 4, Dynamic> features_Q = getFeaturesMatrix(Q);
   Matrix<float, 4, Dynamic> features_P = getFeaturesMatrix(P);
 
@@ -60,23 +188,32 @@ Pointcloud icp(Pointcloud Q, Pointcloud P, TransformMatrix & Tacc)
   DP data(features_P, featureLabels);
   DP ref(features_Q, featureLabels);
 
-  PM::ICP icp;
   PM::Transformation* rigidTrans;
 	rigidTrans = PM::get().REG(Transformation).create("RigidTransformation");
   data = rigidTrans->compute(data, Tacc); // init transform
-  // load YAML config
-  string configFile = "icp_config.yaml";
-  ifstream ifs(configFile.c_str());
-  icp.loadFromYaml(ifs);
-  // icp.setDefault();
-  TransformMatrix T = icp(data, ref);
-  // cout<< endl << "T: " << endl << T;
 
-  // Transform data to express it in ref
+  // icp with ransac
+  TransformMatrix T = ransacIcp(ref, data, cs);
+  cout<< endl << "ransacT: " << endl << T;
+
   DP data_out(data);
-  icp.transformations.apply(data_out, T);
+  data_out = rigidTrans->compute(data_out, T);
   accumulateTransfor(Tacc, T);
-  // cout<< endl << "Tacc: " << endl << Tacc;
+
+  // icp alone
+  // PM::ICP icp;
+  // // string configFile = "icp_config.yaml";
+  // // ifstream ifs(configFile.c_str());
+  // // icp.loadFromYaml(ifs);
+  // icp.setDefault();
+  // TransformMatrix T = icp(data, ref);
+  // cout<< endl << "T: " << endl << T;
+  //
+  // // Transform data to express it in ref
+  // DP data_out(data);
+  // icp.transformations.apply(data_out, T);
+  // accumulateTransfor(Tacc, T);
+
 
   // Save files to see the results
   // ref.save("test_ref.vtk");
