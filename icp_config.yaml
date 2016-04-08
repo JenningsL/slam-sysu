@@ -3,10 +3,10 @@ readingDataPointsFilters:
       prob: 1
 
 referenceDataPointsFilters:
-  # - SamplingSurfaceNormalDataPointsFilter:
-  #     knn: 10
-  - RandomSamplingDataPointsFilter:
-      prob: 1
+  - SamplingSurfaceNormalDataPointsFilter:
+      knn: 10
+  # - RandomSamplingDataPointsFilter:
+  #     prob: 1
 
 matcher:
   KDTreeMatcher:
@@ -15,10 +15,10 @@ matcher:
 
 outlierFilters:
   - TrimmedDistOutlierFilter:
-      ratio: 0.95
+      ratio: 1
 
 errorMinimizer:
-  PointToPointErrorMinimizer
+  PointToPlaneErrorMinimizer
 
 transformationCheckers:
   - CounterTransformationChecker:

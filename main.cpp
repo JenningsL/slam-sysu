@@ -94,15 +94,16 @@ void extractGround(Pointcloud P, Pointcloud & ground, Pointcloud &nonGround) {
   point3d upper, lower;
   P.calcBBX(lower, upper);
   point3d ground_upper(upper.x(), upper.x(), lower.z() + 1);
-  point3d ground_lower(lower.x(), lower.x(), lower.z() + 7);
+  point3d ground_lower(lower.x(), lower.x(), lower.z() + 4.5);
   ground.push_back(P);
   nonGround.push_back(P);
   ground.crop(lower, ground_upper);
   nonGround.crop(ground_lower, upper);
 }
 
-void getPointcloudFeatures(Pointcloud cluster, point3d &centroid) {
+void getClusterFeatures(Pointcloud cluster, point3d &centroid, point3d & boxSize) {
   int size = cluster.size();
+  // calc centroid
   float x, y, z;
   for (int i = 0; i < size; i++) {
     x += cluster[i].x();
@@ -110,6 +111,10 @@ void getPointcloudFeatures(Pointcloud cluster, point3d &centroid) {
     z += cluster[i].z();
   }
   centroid = point3d(x/size, y/size, z/size);
+  // calc boxSize
+  point3d upper, lower;
+  cluster.calcBBX(lower, upper);
+  boxSize = point3d(upper.x() - lower.x(), upper.y() - lower.y(), upper.z() - lower.z());
 }
 
 void getInAndOutliners(Pointcloud P, bool * cs, Pointcloud &inliners, Pointcloud &outliners) {
@@ -139,21 +144,15 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs) {
   typedef std::pair<int, Pointcloud> PAIR;
   Pointcloud dcs; // dynamic candidates
   Pointcloud stationary;
-  // for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
-  //   point3d endPoint((*it).x(), (*it).y(), (*it).z());
-  //   OcTreeNode* node = tree.search (endPoint);
-  //   if (node != NULL && node->getOccupancy() < 0.5) {
-  //     dcs.push_back(endPoint);
-  //   } else {
-  //     stationary.push_back(endPoint);
-  //   }
-  // }
+
   getInAndOutliners(P, cs, stationary, dcs);
 
   int size = dcs.size();
   cout << "dynamic candidates size: " << size << "/" << P.size() << endl;
   int* clusters_idxs = new int[size];
-  clusters_idxs = dbscan(dcs, 10, 1); // -min_points -epsilon
+
+  clusters_idxs = dbscan(dcs, 10, 0.5); // -min_points -epsilon
+
   MAP clusterMap;
   for (int i = 0; i < size; i++) {
     int cluster_idx = clusters_idxs[i];
@@ -174,21 +173,25 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs) {
   for (MAP::iterator it = clusterMap.begin(); it != clusterMap.end(); it++) {
     Pointcloud cluster = it->second;
     int cluster_idx = it->first;
+
     point3d c; // centroid of the cluster
-    getPointcloudFeatures(cluster, c);
+    point3d boxSize; // width, height, length of outerBox
+    getClusterFeatures(cluster, c, boxSize);
     // if (cluster_idx == 0 || cluster.size() < 100 || cluster.size() > 1000 || c.z() > 1.5 || c.z() < -1) {
+    // if (cluster_idx == 0 || cluster.size() < 50 || boxSize.z() < 0.2 || boxSize.z() > 3) {
     if (cluster_idx == 0 || cluster.size() < 50) {
       stationary.push_back(cluster);
     } else {
-
       cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
-      // clear points
+
+      // cluster expand
       Pointcloud tmp(P);
       point3d lowerBound, upperBound;
       cluster.calcBBX(lowerBound, upperBound);
-      lowerBound -= point3d(0.5, 0.5, 0.5);
-      upperBound += point3d(0.5, 0.5, 0.5);
+      lowerBound -= point3d(0.2, 0.2, 0.5);
+      upperBound += point3d(0.2, 0.2, 0.5);
       tmp.crop(lowerBound, upperBound);
+
       for (Pointcloud::iterator it = tmp.begin(); it != tmp.end(); it++) {
         // tree.updateNode((*it), false);
         ColorOcTreeNode* n = tree.updateNode((*it), true);
@@ -225,11 +228,11 @@ Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
   P = icp(lastP, P, TransAcc, cs);
   // dynamic detection
   // extractGround(P, ground, PWithOutGround);
+  // P_ = dynamicFilter(tree, PWithOutGround, cs);
   P_ = dynamicFilter(tree, P, cs);
   // P_.push_back(ground);
-  P = P_;
 
-  for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
+  for (Pointcloud::iterator it = P_.begin(); it != P_.end(); it++) {
     tree.updateNode((*it), true);
     tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
     // if (cs[i]) {

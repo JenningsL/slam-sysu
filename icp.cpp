@@ -115,7 +115,8 @@ DP matrix2DP(Matrix<float, 4, Dynamic> features) {
 }
 
 TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
-  const int MAX_ITER = 20;
+  long beginTime = clock();
+  const int MAX_ITER = 10;
   const float pIn = 0.7;
   float throttle = 0.1;
   float errMin = -1;
@@ -159,12 +160,19 @@ TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
   }
 
   if (!founded) {
-    cout << "falled back" << endl;
+    cout << "ransac icp falled back" << endl;
     bestT = icp(data, ref);
+    findInliners(ref, data, bestT, throttle, cs);
   }
 
-  cout << "ransac icp completed in " << i << "iterations" << endl;
-  cout << "final err: " << errMin << endl;
+  // cout << "ransac icp completed in " << i << "iterations" << endl;
+  // cout << "final err: " << errMin << endl;
+
+  long endTime = clock();
+  char msg[100];
+  sprintf(msg, "ransac icp consume time: %.2f s.\n", (float)(endTime-beginTime)/1000000);
+  cout << msg;
+
   return bestT;
 }
 /*******************/

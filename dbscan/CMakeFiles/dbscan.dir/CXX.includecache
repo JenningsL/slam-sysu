@@ -11,6 +11,10 @@ octomap/octomap.h
 -
 nabo/nabo.h
 /Users/jennings/Desktop/slam/project/dbscan/nabo/nabo.h
+algorithm
+-
+cmath
+-
 
 /usr/local/include/boost/any.hpp
 algorithm

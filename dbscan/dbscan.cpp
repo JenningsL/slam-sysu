@@ -1,12 +1,26 @@
 #include <octomap/octomap.h>
 #include "nabo/nabo.h"
+#include <algorithm>
+#include <cmath>
 using namespace octomap;
 using namespace std;
 using namespace Nabo;
 using namespace Eigen;
 
 NNSearchF* nns;
+MatrixXi indicesTable;
+MatrixXf dists2Table;
+
+int getRequiredMinPointAtDist(int baseMinPoint, float dist) {
+  const int baseDist = 10;
+  // const int baseMinPoint = 10;
+  const int atLeast = 5;
+  int density = ceil(baseMinPoint * pow(atan(1/dist), 2) / pow(atan(1/baseDist), 2));
+  return std::max(density, atLeast);
+}
+
 /**
+ * due to performance matter, this function is no longer used
  * find all points within a sphere, store it in @paramnear Points
  * @param  epsilon    [description]
  * @param  centerIdx  [description]
@@ -25,7 +39,8 @@ int regionQuery(float epsilon, int centerIdx, bool *visited, const Pointcloud da
   q(1) = cPoint.y();
   q(2) = cPoint.z();
   // const int K = 1000;
-  const int K = size - 1;
+  // const int K = size - 1;
+  const int K = min(50, size - 1);
   VectorXi indices(K);
   VectorXf dists2(K);
   nns->knn(q, indices, dists2, K, 0, 0, epsilon);
@@ -36,6 +51,17 @@ int regionQuery(float epsilon, int centerIdx, bool *visited, const Pointcloud da
   }
 
   return nearPoints.size();
+
+  /*********** new implement ***********/
+  // nearPoints.clear();
+  // VectorXi indices = indicesTable.col(centerIdx);
+  // for (int i = 0; i < indices.rows(); i++) {
+  //   if (indices(i)) {
+  //     nearPoints.push_back(indices(i));
+  //   }
+  // }
+  //
+  // return nearPoints.size();
 }
 
 void expandCluster(int *&cluster_nos, const Pointcloud dataset, bool *visited, int cluster_no, std::list<int> sphere_points, int centerIdx, float epsilon, int min_points) {
@@ -45,14 +71,26 @@ void expandCluster(int *&cluster_nos, const Pointcloud dataset, bool *visited, i
     sphere_points.pop_front();
     if (!visited[idx]) {
       visited[idx] = 1;
+
       std::list<int> nearPoints;
-      int nearPointsNum = regionQuery(epsilon, idx, visited, dataset, nearPoints);
+      // int nearPointsNum = regionQuery(epsilon, idx, visited, dataset, nearPoints);
+      nearPoints.clear();
+      VectorXi indices = indicesTable.col(idx);
+      for (int j = 0; j < indices.rows(); j++) {
+        if (indices(j)) {
+          nearPoints.push_back(indices(j));
+        }
+      }
+      int nearPointsNum = nearPoints.size();
       // cout << nearPointsNum << " ";
-      if (nearPointsNum >= min_points) {
-        // concatenate two vector
-        sphere_points.insert(sphere_points.begin(), nearPoints.begin(), nearPoints.end());
+      // calculate min_points based on distance
+      int min_points_at_dist = getRequiredMinPointAtDist(min_points, dataset[idx].distance(point3d(0, 0, 0)));
+      if (nearPointsNum >= min_points_at_dist) {
         // add this point to this cluster
         cluster_nos[idx] = cluster_no;
+
+        // concatenate two vector
+        sphere_points.insert(sphere_points.begin(), nearPoints.begin(), nearPoints.end());
       }
     }
   }
@@ -66,10 +104,17 @@ void expandCluster(int *&cluster_nos, const Pointcloud dataset, bool *visited, i
  * @return            [cluster indexs indicating which cluster the corresponding point belong to]
  */
 int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon) {
+  const int K = 50;
 	int next_cluster = 1;
   int DATASET_SIZE = dataset.size();
   bool *visited = new bool[DATASET_SIZE];
   int *cluster_nos = new int[DATASET_SIZE];
+
+  // not enough points
+  if (DATASET_SIZE < K) {
+    for (int i = 0; i < DATASET_SIZE; i++) cluster_nos[i] = 0;
+    return cluster_nos;
+  }
 
   // init kd-tree nearsearch
   MatrixXf M;
@@ -83,6 +128,10 @@ int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon)
   }
   nns = NNSearchF::createKDTreeLinearHeap(M);
 
+  indicesTable.resize(K, M.cols());
+  dists2Table.resize(K, M.cols());
+  nns->knn(M, indicesTable, dists2Table, K, 0, 0, epsilon);
+
 	for(int i = 0; i < DATASET_SIZE; i++)
 	{
 		if(!visited[i])
@@ -90,8 +139,19 @@ int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon)
 			visited[i] = 1;
 
       std::list<int> nearPoints;
-			int num_npoints = regionQuery(epsilon, i, visited, dataset, nearPoints);
-			if(num_npoints > min_points) {
+			// int num_npoints = regionQuery(epsilon, i, visited, dataset, nearPoints);
+			// regionQuery
+      nearPoints.clear();
+      VectorXi indices = indicesTable.col(i);
+      for (int j = 0; j < indices.rows(); j++) {
+        if (indices(j)) {
+          nearPoints.push_back(indices(j));
+        }
+      }
+      int num_npoints = nearPoints.size();
+      // calculate min_points based on distance
+      int min_points_at_dist = getRequiredMinPointAtDist(min_points, dataset[i].distance(point3d(0, 0, 0)));
+			if(num_npoints > min_points_at_dist) {
 				expandCluster(cluster_nos, dataset, visited, next_cluster, nearPoints, i, epsilon, min_points);
 				next_cluster++;
 			} else {
@@ -99,6 +159,7 @@ int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon)
       }
 		}
 	}
+
   delete []visited;
   /* save result in file */
   // ofstream out;
