@@ -15,16 +15,24 @@ set(CMAKE_MAKEFILE_DEPENDS
   "octomap/CMakeLists.txt"
   "octomap/math/CMakeLists.txt"
   "ransac/CMakeLists.txt"
+  "tracking/CMakeLists.txt"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeCInformation.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeCXXInformation.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeCheckCompilerFlagCommonPatterns.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeCommonLanguageInclude.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeGenericSystem.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeParseArguments.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeSystemSpecificInformation.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CMakeSystemSpecificInitialize.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CheckCXXCompilerFlag.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/CheckCXXSourceCompiles.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Compiler/AppleClang-C.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Compiler/AppleClang-CXX.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Compiler/Clang.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Compiler/GNU.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/FindMatlab.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/FindPackageHandleStandardArgs.cmake"
+  "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/FindPackageMessage.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Platform/Darwin-AppleClang-C.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Platform/Darwin-AppleClang-CXX.cmake"
   "/usr/local/Cellar/cmake/3.4.3/share/cmake/Modules/Platform/Darwin-Clang-C.cmake"
@@ -50,6 +58,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "octomap/math/CMakeFiles/CMakeDirectoryInformation.cmake"
   "dbscan/CMakeFiles/CMakeDirectoryInformation.cmake"
   "ransac/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "tracking/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:
@@ -59,4 +68,5 @@ set(CMAKE_DEPEND_INFO_FILES
   "octomap/math/CMakeFiles/octomath.dir/DependInfo.cmake"
   "dbscan/CMakeFiles/dbscan.dir/DependInfo.cmake"
   "ransac/CMakeFiles/ransac.dir/DependInfo.cmake"
+  "tracking/CMakeFiles/tracking.dir/DependInfo.cmake"
   )

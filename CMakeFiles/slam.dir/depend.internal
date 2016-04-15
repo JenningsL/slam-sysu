@@ -1222,6 +1222,9 @@ CMakeFiles/slam.dir/main.cpp.o
  /Users/jennings/Desktop/slam/project/dbscan/dbscan.h
  /Users/jennings/Desktop/slam/project/main.cpp
  /Users/jennings/Desktop/slam/project/ransac/ransac.h
+ /Users/jennings/Desktop/slam/project/tracking/TrackManager.h
+ /Users/jennings/Desktop/slam/project/tracking/TrackTarget.h
+ /Users/jennings/Desktop/slam/project/tracking/assignment.h
  /usr/local/include/boost/any.hpp
  /usr/local/include/boost/array.hpp
  /usr/local/include/boost/assert.hpp

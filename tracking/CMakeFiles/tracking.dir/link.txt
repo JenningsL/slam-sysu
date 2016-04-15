@@ -1,0 +1,2 @@
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar qc libtracking.a  CMakeFiles/tracking.dir/assignmentoptimal.cpp.o CMakeFiles/tracking.dir/TrackManager.cpp.o CMakeFiles/tracking.dir/TrackTarget.cpp.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib libtracking.a

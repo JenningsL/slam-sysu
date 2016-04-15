@@ -1,5 +1,6 @@
-/Users/jennings/Desktop/slam/project/ransac/CMakeFiles/ransac.dir
-/Users/jennings/Desktop/slam/project/dbscan/CMakeFiles/dbscan.dir
 /Users/jennings/Desktop/slam/project/CMakeFiles/slam.dir
+/Users/jennings/Desktop/slam/project/dbscan/CMakeFiles/dbscan.dir
+/Users/jennings/Desktop/slam/project/ransac/CMakeFiles/ransac.dir
+/Users/jennings/Desktop/slam/project/tracking/CMakeFiles/tracking.dir
 /Users/jennings/Desktop/slam/project/octomap/math/CMakeFiles/octomath.dir
 /Users/jennings/Desktop/slam/project/octomap/CMakeFiles/octomap.dir

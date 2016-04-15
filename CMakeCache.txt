@@ -14,18 +14,12 @@
 # EXTERNAL cache entries
 ########################
 
-//Path to a program.
-CMAKE_AR:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar
-
 //Choose the type of build, options are: None(CMAKE_CXX_FLAGS or
 // CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
 CMAKE_BUILD_TYPE:STRING=
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
-
-//CXX compiler
-CMAKE_CXX_COMPILER:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
 
 //Flags used by the compiler during all build types.
 CMAKE_CXX_FLAGS:STRING=
@@ -42,9 +36,6 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 
 //Flags used by the compiler during release builds with debug info.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
-
-//C compiler
-CMAKE_C_COMPILER:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
 
 //Flags used by the compiler during all build types.
 CMAKE_C_FLAGS:STRING=
@@ -87,9 +78,6 @@ CMAKE_INSTALL_NAME_TOOL:FILEPATH=/usr/bin/install_name_tool
 CMAKE_INSTALL_PREFIX:PATH=/usr/local
 
 //Path to a program.
-CMAKE_LINKER:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
-
-//Path to a program.
 CMAKE_MAKE_PROGRAM:FILEPATH=/usr/bin/make
 
 //Flags used by the linker during the creation of modules.
@@ -107,15 +95,6 @@ CMAKE_MODULE_LINKER_FLAGS_RELEASE:STRING=
 //Flags used by the linker during Release with Debug Info builds.
 CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//Path to a program.
-CMAKE_NM:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm
-
-//Path to a program.
-CMAKE_OBJCOPY:FILEPATH=CMAKE_OBJCOPY-NOTFOUND
-
-//Path to a program.
-CMAKE_OBJDUMP:FILEPATH=CMAKE_OBJDUMP-NOTFOUND
-
 //Build architectures for OSX
 CMAKE_OSX_ARCHITECTURES:STRING=
 
@@ -129,9 +108,6 @@ CMAKE_OSX_SYSROOT:PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacO
 
 //Value Computed by CMake
 CMAKE_PROJECT_NAME:STATIC=slam
-
-//Path to a program.
-CMAKE_RANLIB:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib
 
 //Flags used by the linker during the creation of dll's.
 CMAKE_SHARED_LINKER_FLAGS:STRING=
@@ -170,20 +146,29 @@ CMAKE_STATIC_LINKER_FLAGS_RELEASE:STRING=
 //Flags used by the linker during Release with Debug Info builds.
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//Path to a program.
-CMAKE_STRIP:FILEPATH=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/strip
-
 //If this value is on, makefiles will be generated without the
 // .SILENT directive, and all commands will be echoed to the console
 // during the make.  This is useful for debugging only. With Visual
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
-//Value Computed by CMake
-convert_BINARY_DIR:STATIC=/Users/jennings/Desktop/slam/project
+//The directory containing a CMake configuration file for MX_LIBRARY.
+MX_LIBRARY_DIR:PATH=MX_LIBRARY_DIR-NOTFOUND
 
-//Value Computed by CMake
-convert_SOURCE_DIR:STATIC=/Users/jennings/Desktop/slam/project
+//Path to a file.
+Matlab_INCLUDE_DIRS:PATH=/Applications/MATLAB_R2015a.app/extern/include
+
+//Extensions for the mex targets (automatically given by Matlab)
+Matlab_MEX_EXTENSION:STRING=mexmaci64
+
+//Path to a library.
+Matlab_MEX_LIBRARY:FILEPATH=/Applications/MATLAB_R2015a.app/bin/maci64/libmex.dylib
+
+//Path to a library.
+Matlab_MX_LIBRARY:FILEPATH=/Applications/MATLAB_R2015a.app/bin/maci64/libmx.dylib
+
+//Matlab installation root path
+Matlab_ROOT_DIR:PATH=/Applications/MATLAB_R2015a.app
 
 //Dependencies for the target
 dbscan_LIB_DEPENDS:STATIC=general;octomap;
@@ -191,14 +176,8 @@ dbscan_LIB_DEPENDS:STATIC=general;octomap;
 //The directory containing a CMake configuration file for libpointmatcher.
 libpointmatcher_DIR:PATH=/usr/local/share/libpointmatcher/cmake
 
-//Dependencies for target
-octomap-static_LIB_DEPENDS:STATIC=
-
 //Dependencies for the target
 octomap_LIB_DEPENDS:STATIC=general;octomath;
-
-//Dependencies for target
-octomath-static_LIB_DEPENDS:STATIC=
 
 //Dependencies for target
 octomath_LIB_DEPENDS:STATIC=
@@ -212,13 +191,14 @@ slam_BINARY_DIR:STATIC=/Users/jennings/Desktop/slam/project
 //Value Computed by CMake
 slam_SOURCE_DIR:STATIC=/Users/jennings/Desktop/slam/project
 
+//Dependencies for the target
+tracking_LIB_DEPENDS:STATIC=general;octomap;
+
 
 ########################
 # INTERNAL cache entries
 ########################
 
-//ADVANCED property for variable: CMAKE_AR
-CMAKE_AR-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
 CMAKE_CACHEFILE_DIR:INTERNAL=/Users/jennings/Desktop/slam/project
 //Major version of cmake used to create the current loaded cache
@@ -235,8 +215,6 @@ CMAKE_COMMAND:INTERNAL=/usr/local/Cellar/cmake/3.4.3/bin/cmake
 CMAKE_CPACK_COMMAND:INTERNAL=/usr/local/Cellar/cmake/3.4.3/bin/cpack
 //Path to ctest program executable.
 CMAKE_CTEST_COMMAND:INTERNAL=/usr/local/Cellar/cmake/3.4.3/bin/ctest
-//ADVANCED property for variable: CMAKE_CXX_COMPILER
-CMAKE_CXX_COMPILER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS
 CMAKE_CXX_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_DEBUG
@@ -247,8 +225,6 @@ CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
 CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_COMPILER
-CMAKE_C_COMPILER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS
 CMAKE_C_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_C_FLAGS_DEBUG
@@ -261,8 +237,6 @@ CMAKE_C_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 CMAKE_C_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //Path to cache edit program executable.
 CMAKE_EDIT_COMMAND:INTERNAL=/usr/local/Cellar/cmake/3.4.3/bin/ccmake
-//Executable file format
-CMAKE_EXECUTABLE_FORMAT:INTERNAL=Unknown
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS
 CMAKE_EXE_LINKER_FLAGS-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_EXE_LINKER_FLAGS_DEBUG
@@ -288,8 +262,6 @@ CMAKE_GENERATOR_TOOLSET:INTERNAL=
 CMAKE_HOME_DIRECTORY:INTERNAL=/Users/jennings/Desktop/slam/project
 //ADVANCED property for variable: CMAKE_INSTALL_NAME_TOOL
 CMAKE_INSTALL_NAME_TOOL-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_LINKER
-CMAKE_LINKER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MAKE_PROGRAM
 CMAKE_MAKE_PROGRAM-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS
@@ -302,16 +274,8 @@ CMAKE_MODULE_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_MODULE_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO
 CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_NM
-CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
-//ADVANCED property for variable: CMAKE_OBJCOPY
-CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_OBJDUMP
-CMAKE_OBJDUMP-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_RANLIB
-CMAKE_RANLIB-ADVANCED:INTERNAL=1
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=6
 //Path to CMake installation.
 CMAKE_ROOT:INTERNAL=/usr/local/Cellar/cmake/3.4.3/share/cmake
 //ADVANCED property for variable: CMAKE_SHARED_LINKER_FLAGS
@@ -338,10 +302,20 @@ CMAKE_STATIC_LINKER_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_STATIC_LINKER_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO
 CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_STRIP
-CMAKE_STRIP-ADVANCED:INTERNAL=1
-//uname command
-CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding Matlab
+FIND_PACKAGE_MESSAGE_DETAILS_Matlab:INTERNAL=[/Applications/MATLAB_R2015a.app/extern/include][/Applications/MATLAB_R2015a.app/bin/maci64/libmex.dylib][mexmaci64][/Applications/MATLAB_R2015a.app][cfound components:  MX_LIBRARY ][v8.5()]
+//ADVANCED property for variable: Matlab_INCLUDE_DIRS
+Matlab_INCLUDE_DIRS-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Matlab_MEX_EXTENSION
+Matlab_MEX_EXTENSION-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Matlab_MEX_LIBRARY
+Matlab_MEX_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Matlab_MX_LIBRARY
+Matlab_MX_LIBRARY-ADVANCED:INTERNAL=1
+//last Matlab root dir location
+Matlab_ROOT_DIR_LAST_CACHED:INTERNAL=/Applications/MATLAB_R2015a.app
+//Matlab version (automatically determined)
+Matlab_VERSION_STRING_INTERNAL:INTERNAL=8.5
 

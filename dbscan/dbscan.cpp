@@ -104,17 +104,18 @@ void expandCluster(int *&cluster_nos, const Pointcloud dataset, bool *visited, i
  * @return            [cluster indexs indicating which cluster the corresponding point belong to]
  */
 int* dbscan(const Pointcloud dataset, const int min_points, const float epsilon) {
-  const int K = 50;
+
 	int next_cluster = 1;
   int DATASET_SIZE = dataset.size();
   bool *visited = new bool[DATASET_SIZE];
   int *cluster_nos = new int[DATASET_SIZE];
 
-  // not enough points
-  if (DATASET_SIZE < K) {
-    for (int i = 0; i < DATASET_SIZE; i++) cluster_nos[i] = 0;
-    return cluster_nos;
-  }
+  // // not enough points
+  // if (DATASET_SIZE < K) {
+  //   for (int i = 0; i < DATASET_SIZE; i++) cluster_nos[i] = 0;
+  //   return cluster_nos;
+  // }
+  const int K = min(50, DATASET_SIZE - 1);
 
   // init kd-tree nearsearch
   MatrixXf M;

@@ -10,18 +10,26 @@
 #include "icp.h"
 #include "dbscan/dbscan.h"
 #include "ransac/ransac.h"
+#include "tracking/TrackManager.h"
 
 using namespace std;
 using namespace octomap;
 using namespace Eigen;
 
-#define MAX_RANGE -1
+#define MAX_RANGE 10
+#define GROUND_HEIGHT -0.7
+#define CEIL_HEIGHT 1
+
+// #define MAX_RANGE 30
+// #define GROUND_HEIGHT -0.2
+// #define CEIL_HEIGHT 100
 
 typedef PointMatcher<float>::TransformationParameters TransformMatrix;
 
 // global
 TransformMatrix TransAcc; // accumulated transform matrix
 int total, progress; // for display progress
+TrackManager trackManager;
 
 class CSVRow
 {
@@ -90,21 +98,39 @@ Pointcloud readPointCloud(const char* filename) {
 //     }
 //   }
 // }
+
 void extractGround(Pointcloud P, Pointcloud & ground, Pointcloud &nonGround) {
   point3d upper, lower;
   P.calcBBX(lower, upper);
-  point3d ground_upper(upper.x(), upper.x(), lower.z() + 1);
-  point3d ground_lower(lower.x(), lower.x(), lower.z() + 4.5);
+  // cout << "lower: " << lower << endl;
+  // cout << "upper: " << upper << endl;
+  point3d ground_upper(upper.x(), upper.y(), lower.z() + 1);
+  point3d ground_lower(lower.x(), lower.y(), GROUND_HEIGHT);
+
+  // remove ceiling
+  upper = point3d(upper.x(), upper.y(), CEIL_HEIGHT);
+
   ground.push_back(P);
   nonGround.push_back(P);
   ground.crop(lower, ground_upper);
   nonGround.crop(ground_lower, upper);
 }
 
+Pointcloud limitXY(Pointcloud P, float max) {
+  point3d upper, lower;
+  P.calcBBX(lower, upper);
+  upper = point3d(max, max, upper.z());
+  lower = point3d(-max, -max, lower.z());
+  Pointcloud result;
+  result.push_back(P);
+  result.crop(lower, upper);
+  return result;
+}
+
 void getClusterFeatures(Pointcloud cluster, point3d &centroid, point3d & boxSize) {
   int size = cluster.size();
   // calc centroid
-  float x, y, z;
+  float x = 0, y = 0, z = 0;
   for (int i = 0; i < size; i++) {
     x += cluster[i].x();
     y += cluster[i].y();
@@ -132,18 +158,36 @@ void getInAndOutliners(Pointcloud P, bool * cs, Pointcloud &inliners, Pointcloud
   }
 }
 
+bool matchIndoorCriteria(Pointcloud cluster) {
+  point3d c; // centroid of the cluster
+  point3d boxSize; // width, height, length of outerBox
+  getClusterFeatures(cluster, c, boxSize);
+  return cluster.size() > 20 && c.z() < 1 && (boxSize.z() * boxSize.z()) / (boxSize.x() * boxSize.y()) > 1;
+}
+
+bool matchOutdoorCriteria(Pointcloud cluster) {
+  point3d c; // centroid of the cluster
+  point3d boxSize; // width, height, length of outerBox
+  getClusterFeatures(cluster, c, boxSize);
+
+  bool boxSizeLimit = boxSize.x() < 2 && boxSize.y() < 2 && boxSize.z() < 2 && boxSize.z() > 0.5;
+
+  return cluster.size() > 20 && c.z() < 1 && c.z() > GROUND_HEIGHT && boxSizeLimit;
+}
+
 /**
  * filter out dynamic points
  * @param  tree [description]
  * @param  P    [description]
  * @return      [pointcloud without dynamic points]
  */
-Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs) {
+Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs, std::vector<Pointcloud> &movingObjs) {
   long beginTime = clock();
   typedef std::map<int, Pointcloud> MAP;
   typedef std::pair<int, Pointcloud> PAIR;
   Pointcloud dcs; // dynamic candidates
   Pointcloud stationary;
+  movingObjs.clear();
 
   getInAndOutliners(P, cs, stationary, dcs);
 
@@ -174,29 +218,25 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs) {
     Pointcloud cluster = it->second;
     int cluster_idx = it->first;
 
-    point3d c; // centroid of the cluster
-    point3d boxSize; // width, height, length of outerBox
-    getClusterFeatures(cluster, c, boxSize);
-    // if (cluster_idx == 0 || cluster.size() < 100 || cluster.size() > 1000 || c.z() > 1.5 || c.z() < -1) {
-    // if (cluster_idx == 0 || cluster.size() < 50 || boxSize.z() < 0.2 || boxSize.z() > 3) {
-    if (cluster_idx == 0 || cluster.size() < 50) {
+    // point3d c; // centroid of the cluster
+    // point3d boxSize; // width, height, length of outerBox
+    // getClusterFeatures(cluster, c, boxSize);
+    // if (cluster_idx == 0 || cluster.size() < 20 || (boxSize.z() * boxSize.z()) / (boxSize.x() * boxSize.y()) < 1) {
+    if (cluster_idx == 0 || !matchOutdoorCriteria(cluster)) {
       stationary.push_back(cluster);
     } else {
       cout<< "cluster-" << it->first << " has " << cluster.size() << " points" << endl;
-
+      // cout << (boxSize.z() * boxSize.z()) / (boxSize.x() * boxSize.y()) << endl;
       // cluster expand
       Pointcloud tmp(P);
       point3d lowerBound, upperBound;
       cluster.calcBBX(lowerBound, upperBound);
-      lowerBound -= point3d(0.2, 0.2, 0.5);
-      upperBound += point3d(0.2, 0.2, 0.5);
+      // point3d ex(0.3, 0.3, 0.3);
+      point3d ex(0.1, 0.1, 0.1);
+      lowerBound -= ex;
+      upperBound += ex;
       tmp.crop(lowerBound, upperBound);
-
-      for (Pointcloud::iterator it = tmp.begin(); it != tmp.end(); it++) {
-        // tree.updateNode((*it), false);
-        ColorOcTreeNode* n = tree.updateNode((*it), true);
-        n->setColor(255,0,0); // set color to red
-      }
+      movingObjs.push_back(tmp);
     }
   }
 
@@ -209,38 +249,61 @@ Pointcloud dynamicFilter(ColorOcTree &tree, Pointcloud P, bool * cs) {
   return stationary;
 }
 
+void showMovingObjsTrajectory(ColorOcTree &tree) {
+  TrackTarget target = trackManager.targets[0];
+  for (int i = 0; i < target.frames.size(); i++) {
+    point3d p = target.trajectory[i];
+    ColorOcTreeNode* n = tree.updateNode(p, true);
+    n->setColor(255,0,0); // set color to red
+  }
+}
+
 void initMap(ColorOcTree &tree, Pointcloud P) {
-  // Pointcloud ground, PWithOutGround;
-  // extractGround(P, ground, PWithOutGround);
-  // P = PWithOutGround;
+  Pointcloud ground, PWithOutGround;
+  extractGround(P, ground, PWithOutGround);
+  P = PWithOutGround;
+  P = limitXY(P, MAX_RANGE);
 
   for (Pointcloud::iterator it = P.begin(); it != P.end(); it++) {
     tree.updateNode((*it).x(), (*it).y(), (*it).z(), true);
     tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
   }
+
 }
 
 Pointcloud updateMap(ColorOcTree &tree, Pointcloud P, Pointcloud lastP) {
   long beginTime = clock();
   Pointcloud ground, PWithOutGround, P_;
   // icp and dynamic dectction should be implemented without ground points
+  extractGround(P, ground, PWithOutGround);
+  P = PWithOutGround;
+  P = limitXY(P, MAX_RANGE);
   bool * cs = new bool[P.size()];
   P = icp(lastP, P, TransAcc, cs);
   // dynamic detection
-  // extractGround(P, ground, PWithOutGround);
-  // P_ = dynamicFilter(tree, PWithOutGround, cs);
-  P_ = dynamicFilter(tree, P, cs);
-  // P_.push_back(ground);
+  std::vector<Pointcloud> movingObjs;
+  P_ = dynamicFilter(tree, P, cs, movingObjs);
+  trackManager.update(movingObjs);
 
+  // add points
   for (Pointcloud::iterator it = P_.begin(); it != P_.end(); it++) {
     tree.updateNode((*it), true);
     tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
-    // if (cs[i]) {
-    //   tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 0, 0, 255);
-    // } else {
-    //   tree.setNodeColor((*it).x(), (*it).y(), (*it).z(), 255, 0, 0);
-    // }
-  } // color
+  }
+
+  // mark and clear dynamic points
+  for (int i = 0; i < movingObjs.size(); i++) {
+    Pointcloud dynObj = movingObjs[i];
+    for (Pointcloud::iterator it = dynObj.begin(); it != dynObj.end(); it++) {
+      ColorOcTreeNode* node = tree.updateNode((*it), false);
+      node->setLogOdds(-0.4);
+      // ColorOcTreeNode* n = tree.updateNode((*it), true);
+      // n->setColor(255,0,0); // set color to red
+    }
+  }
+
+  tree.setNodeColor(TransAcc(0, 3), TransAcc(1, 3), TransAcc(2, 3), 255, 0, 255); // lidar current pos
+
   long endTime = clock();
   char msg[100];
   sprintf(msg, "frame %d/%d completed, consumed time: %.2f s.\n", progress, total, (float)(endTime-beginTime)/1000000);
@@ -276,6 +339,9 @@ int main(int argc, char** argv) {
     lastP = updateMap(tree, P, lastP);
     progress++;
   }
+
+  // showMovingObjsTrajectory(tree);
+  trackManager.saveTargets();
 
   // string result = "map.bt";
   // tree.writeBinary(result);

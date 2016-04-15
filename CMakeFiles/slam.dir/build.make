@@ -128,6 +128,10 @@ slam: /Users/jennings/Libraries/libpointmatcher/build/contrib/yaml-cpp-pm/libyam
 slam: octomap/liboctomap.a
 slam: dbscan/libdbscan.a
 slam: ransac/libransac.a
+slam: tracking/libtracking.a
+slam: /Applications/MATLAB_R2015a.app/bin/maci64/libmex.dylib
+slam: /Applications/MATLAB_R2015a.app/bin/maci64/libmx.dylib
+slam: /Applications/MATLAB_R2015a.app/bin/maci64/libmx.dylib
 slam: octomap/liboctomap.a
 slam: octomap/math/liboctomath.a
 slam: CMakeFiles/slam.dir/link.txt

@@ -72,7 +72,7 @@ Pointcloud findInliners(DP Q, DP P_, TransformMatrix T, float throttle, bool *cs
   MatrixXf dists2;
   indices.resize(K, q.cols());
   dists2.resize(K, q.cols());
-  nns->knn(q, indices, dists2, K, throttle);
+  nns->knn(q, indices, dists2, K, 0, throttle);
 
   for (int i = 0; i < q.cols(); i++) {
     Vector4f point = P_origin.col(i);
@@ -117,17 +117,18 @@ DP matrix2DP(Matrix<float, 4, Dynamic> features) {
 TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
   long beginTime = clock();
   const int MAX_ITER = 10;
-  const float pIn = 0.7;
-  float throttle = 0.1;
+  const float pIn = 0.6;
+  float throttle = 0.05;
   float errMin = -1;
   float errAcc = 0.1;
+  float errStop = 0.05;
 
   // setup icp
   PM::ICP icp;
-  // string configFile = "icp_config.yaml";
-  // ifstream ifs(configFile.c_str());
-  // icp.loadFromYaml(ifs);
-  icp.setDefault();
+  string configFile = "icp_config.yaml";
+  ifstream ifs(configFile.c_str());
+  icp.loadFromYaml(ifs);
+  // icp.setDefault();
 
   int dataSize = data.features.cols();
   Pointcloud P = toPointCloud(data.features);
@@ -136,7 +137,7 @@ TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
   int i;
   bool founded = false;
   for (i = 0; i < MAX_ITER; i++) {
-    sample = randomPick(P, ceil(dataSize*0.5));
+    sample = randomPick(P, ceil(dataSize * pIn));
 
     DP dataTmp = matrix2DP(sample);
     TransformMatrix T = icp(dataTmp, ref);
@@ -145,16 +146,17 @@ TransformMatrix ransacIcp(DP ref, DP data, bool *cs) {
     cout << "inliners:" << (float)inliners.size()/dataSize << endl;
 
     if ((float)inliners.size()/dataSize > pIn) {
-      founded = true;
+
       DP inlinersDp = matrix2DP(getFeaturesMatrix(inliners));
 
       T = icp(inlinersDp, ref);
 
       float err = calcErr(ref, inlinersDp, T);
-      if (errMin < 0 || err < errMin) {
+      if (err < errAcc && (errMin < 0 || err < errMin)) {
+        founded = true;
         errMin = err;
         bestT = T;
-        if (errMin < errAcc) break;
+        if (errMin < errStop) break;
       }
     }
   }

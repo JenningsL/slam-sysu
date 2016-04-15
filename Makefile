@@ -175,6 +175,19 @@ ransac/fast:
 	$(MAKE) -f ransac/CMakeFiles/ransac.dir/build.make ransac/CMakeFiles/ransac.dir/build
 .PHONY : ransac/fast
 
+#=============================================================================
+# Target rules for targets named tracking
+
+# Build rule for target.
+tracking: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 tracking
+.PHONY : tracking
+
+# fast build rule for target.
+tracking/fast:
+	$(MAKE) -f tracking/CMakeFiles/tracking.dir/build.make tracking/CMakeFiles/tracking.dir/build
+.PHONY : tracking/fast
+
 icp.o: icp.cpp.o
 
 .PHONY : icp.o
@@ -242,6 +255,7 @@ help:
 	@echo "... octomath"
 	@echo "... dbscan"
 	@echo "... ransac"
+	@echo "... tracking"
 	@echo "... icp.o"
 	@echo "... icp.i"
 	@echo "... icp.s"

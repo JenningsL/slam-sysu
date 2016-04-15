@@ -17,8 +17,15 @@ set(CMAKE_DEPENDS_CHECK_CXX
   )
 set(CMAKE_CXX_COMPILER_ID "Clang")
 
+# Preprocessor definitions for this target.
+set(CMAKE_TARGET_DEFINITIONS_CXX
+  "MATLAB_MEX_FILE"
+  "MX_COMPAT_32"
+  )
+
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/Applications/MATLAB_R2015a.app/extern/include"
   "."
   "/usr/local/include"
   "/usr/local/include/eigen3"
